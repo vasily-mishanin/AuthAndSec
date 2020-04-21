@@ -1,4 +1,5 @@
 //jshint esversion:6
+require("dotenv").config(); //for using Environment Variables
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
@@ -6,6 +7,7 @@ const mongoose = require("mongoose");
 const encrypt = require("mongoose-encryption");
 
 const app = express();
+console.log(process.env.SECRET_KEY); // log "SECRET_KEY" from ".env" file
 
 app.use(express.static("public"));
 app.set("view engine", "ejs");
@@ -25,9 +27,12 @@ const userSchema = new mongoose.Schema({
 });
 
 ///////////////////////////////////////////////Encryption////////////////////////////////////////////////////////////////////
-const secret = "Thisisstringusedforencryption";
 //encrypt dosc with 'userSchema' when User.save() and decrypt when User.find()
-userSchema.plugin(encrypt, { secret: secret, encryptedFields: ["password"] });
+// process.env.SECRET_KEY -> grabs SECRET_KEY from .env file
+userSchema.plugin(encrypt, {
+  secret: process.env.SECRET_KEY,
+  encryptedFields: ["password"],
+});
 
 //creating new collection
 const User = new mongoose.model("User", userSchema);
@@ -76,6 +81,6 @@ app.post("/login", (req, res) => {
 localPort = 5000;
 app.listen(localPort, (err) => {
   !err
-    ? console.log(`Server is runnning in port ${localPort}`)
+    ? console.log(`Server is running in port ${localPort}`)
     : console.log(err);
 });
