@@ -20,11 +20,13 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
+/////////////
 
 //GOOGLE OAuth///////////////////////////////////////////////
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 // to use "User.findOrCreate()" method
 const findOrCreate = require("mongoose-findorcreate");
+/////////////
 
 const app = express();
 
@@ -33,6 +35,7 @@ const app = express();
 app.use(express.static("public")); // using "public" folder for statics
 app.set("view engine", "ejs"); // Embedded Javascript
 app.use(bodyParser.urlencoded({ extended: true })); // to take parsed values fron the pages
+
 // set up and initialize "session" with options
 app.use(
   session({
