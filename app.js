@@ -40,7 +40,7 @@ app.use(express.static("public")); // using "public" folder for statics
 app.set("view engine", "ejs"); // Embedded Javascript
 app.use(bodyParser.urlencoded({ extended: true })); // to take parsed values fron the pages
 
-// set up and initialize "session" with options
+//SESSIONS --> set up and initialize "session" with options
 app.use(
   session({
     secret: "The little secret fo yours.",
@@ -53,7 +53,7 @@ app.use(passport.initialize());
 //use passport also for maintaining sessions
 app.use(passport.session());
 
-//connect to MongoDB
+//CONNECT to MongoDB
 const dbName = "userDB";
 mongoose.connect(`mongodb://localhost:27017/${dbName}`, {
   useNewUrlParser: true,
@@ -69,6 +69,8 @@ const userSchema = new mongoose.Schema({
   facebookId: String,
   secret: String,
 });
+
+//PLUGINS
 //salt and hash users passports
 userSchema.plugin(passportLocalMongoose); //from "require" sections
 //use OAuth from Google
@@ -82,11 +84,12 @@ userSchema.plugin(findOrCreate); //from "require" sections
 //   encryptedFields: ["password"],
 // });
 
-//creating new collection ("users") as a model
+//COLLECTION -->creating new collection ("users") as a model
 const User = new mongoose.model("User", userSchema);
 
 //with passport functions embedded
 passport.use(User.createStrategy()); //local login strategy
+
 //serializeUser
 passport.serializeUser(function (user, done) {
   done(null, user.id);
@@ -98,6 +101,7 @@ passport.deserializeUser(function (id, done) {
   });
 });
 
+//STRATEGIES
 //Google OAuth using CLIENT_SECRET and CLIENT_ID from .env/////////////////////////////////////////////////////////
 passport.use(
   new GoogleStrategy(
@@ -145,6 +149,7 @@ app.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["profile"] })
 );
+
 //user will be redirected to. Made by Google
 app.get(
   "/auth/google/secrets",
@@ -159,6 +164,7 @@ app.get(
 //Facebook OAuth20
 app.get("/auth/facebook", passport.authenticate("facebook"));
 
+//user will be redirected to.is being made by Facebook
 app.get(
   "/auth/facebook/secrets",
   passport.authenticate("facebook", { failureRedirect: "/login" }),
@@ -176,6 +182,7 @@ app.get("/register", (req, res) => {
   res.render("register");
 });
 
+//show secrets
 app.get("/secrets", (req, res) => {
   if (req.isAuthenticated()) {
     User.find({ secret: { $ne: null } }, (err, foundUsers) => {
@@ -200,6 +207,10 @@ app.get("/submit", (req, res) => {
 app.get("/logout", (req, res) => {
   req.logout();
   res.redirect("/");
+});
+
+app.get("/failure", (req, res) => {
+  res.render("failure");
 });
 
 app.post("/register", (req, res) => {
@@ -234,7 +245,6 @@ app.post("/register", (req, res) => {
     (err, user) => {
       if (err) {
         console.log(err);
-        res.render("register");
       } else {
         // Authenticate new user, salt and hash "password" automatically and also send cookie to users browser
         passport.authenticate("local")(req, res, () => {
