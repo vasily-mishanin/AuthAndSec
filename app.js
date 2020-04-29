@@ -24,6 +24,10 @@ const passportLocalMongoose = require("passport-local-mongoose");
 
 //GOOGLE OAuth///////////////////////////////////////////////
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+
+//GOOGLE OAuth///////////////////////////////////////////////
+const FacebookStrategy = require("passport-facebook").Strategy;
+
 // to use "User.findOrCreate()" method
 const findOrCreate = require("mongoose-findorcreate");
 /////////////
@@ -101,12 +105,30 @@ passport.use(
       clientID: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
       callbackURL: "http://localhost:5000/auth/google/secrets",
-      //endpoint to get user info not from Google+
+      //endpoint to get user info NOT from Google+
       userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
     },
     function (accessToken, refreshToken, profile, cb) {
       console.log(profile);
       User.findOrCreate({ googleId: profile.id }, function (err, user) {
+        return cb(err, user);
+      });
+    }
+  )
+);
+
+//Facebook OAuth using CLIENT_SECRET and CLIENT_ID from .env/////////////////////////////////////////////////////////
+passport.use(
+  new FacebookStrategy(
+    {
+      clientID: process.env.CLIENT_fb_ID,
+      clientSecret: process.env.CLIENT_fb_SECRET,
+      callbackURL: "http://localhost:5000/auth/facebook/secrets",
+      profileFields: ["id", "email"],
+    },
+    function (accessToken, refreshToken, profile, cb) {
+      console.log(profile);
+      User.findOrCreate({ facebookId: profile.id }, function (err, user) {
         return cb(err, user);
       });
     }
@@ -128,12 +150,23 @@ app.get(
   "/auth/google/secrets",
   passport.authenticate("google", { failureRedirect: "/login" }),
   function (req, res) {
-    // Successful authentication, redirect to "/secrets".
+    // Successful authentication, redirect to "/secrets"
     res.redirect("/secrets");
   }
 );
-
 //////////////////////
+
+//Facebook OAuth20
+app.get("/auth/facebook", passport.authenticate("facebook"));
+
+app.get(
+  "/auth/facebook/secrets",
+  passport.authenticate("facebook", { failureRedirect: "/login" }),
+  function (req, res) {
+    // Successful authentication, redirect to "/secrets"
+    res.redirect("/secrets");
+  }
+);
 
 app.get("/login", (req, res) => {
   res.render("login");
