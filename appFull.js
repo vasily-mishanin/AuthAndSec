@@ -167,7 +167,18 @@ app.get("/logout", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  //////////BCRYPT or MD5////////////////////////////////////////////////
+  //////////MD5 or BCRYPT////////////////////////////////////////////////
+
+  //////////MD5////////////////////////////////////////////////
+  // //  // MD5 HASH --> take "username" and "password". Password will be turneb into unreversable hash by md5()
+  // //   const newUser = new User({
+  // //     name: req.body.username,
+  // //     password: md5(req.body.password),
+  // //   });
+  // //   newUser.save((err) => {
+  // //     err ? console.log(err) : res.render("secrets");
+  // //   });
+
   //////////BCRYPT////////////////////////////////////////////////
   // console.log(req.body);
   // // BCRYPT HASH
@@ -180,17 +191,6 @@ app.post("/register", (req, res) => {
   //     err ? console.log(err) : res.render("secrets");
   //   });
   // });
-
-  //////////MD5////////////////////////////////////////////////
-  // //  // MD5 HASH --> take "username" and "password". Password will be turneb into unreversable hash by md5()
-  // //   const newUser = new User({
-  // //     name: req.body.username,
-  // //     password: md5(req.body.password),
-  // //   });
-  // //   newUser.save((err) => {
-  // //     err ? console.log(err) : res.render("secrets");
-  // //   });
-
   ////////////PASPORT///////////////////////////////////////////
   User.register(
     { username: req.body.username },

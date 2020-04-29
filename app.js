@@ -4,8 +4,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
-// MD5 encryption authentication
-const md5 = require("md5"); // to use md5 hash-function
+// BCRYPT encryption authentication
+const bcrypt = require("bcrypt"); // to use bcrypt technnology
+const saltRounds = 10;
+//
 
 const app = express();
 
@@ -57,29 +59,33 @@ app.get("/submit", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  // MD5 HASH --> take "username" and "password". Password will be turneb into unreversable hash by md5()
-  const newUser = new User({
-    name: req.body.username,
-    password: md5(req.body.password),
-  });
-  newUser.save((err) => {
-    err ? console.log(err) : res.render("secrets");
+  ////////BCRYPT////////////////////////////////////////////////
+  console.log(req.body);
+  // BCRYPT HASH
+  bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
+    const newUser = new User({
+      name: req.body.username,
+      password: hash,
+    });
+    newUser.save((err) => {
+      err ? console.log(err) : res.render("secrets");
+    });
   });
 });
 
 app.post("/login", (req, res) => {
+  // BCRYPT HASH
   const username = req.body.username;
-  // MD5 HASH
-  const requestedPassword = md5(req.body.password); // to hash requested password
+  const requestedPassword = req.body.password;
   User.findOne({ name: username }, (err, foundUser) => {
     if (err) {
       console.log(err);
     } else {
-      // MD5 HASH --> compare stored at "userDB" and already hashed "password" with "requestedPassword" which was hashed via md5()
       if (foundUser) {
-        foundUser.password === requestedPassword
-          ? res.render("secrets")
-          : res.render("failure");
+        bcrypt.compare(requestedPassword, foundUser.password, (err, result) => {
+          // if result===true, i. e. hashes are the same --> render "secrets" page
+          result ? res.render("secrets") : res.render("failure");
+        });
       }
     }
   });
