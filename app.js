@@ -4,6 +4,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
+//encryption using environment variables
+const encrypt = require("mongoose-encryption");
 
 const app = express();
 
@@ -28,6 +30,14 @@ const userSchema = new mongoose.Schema({
   googleId: String,
   facebookId: String,
   secret: String,
+});
+
+/////////////////////////////////////////////Mongoose - Encryption////////////////////////////////////////////////////////////////////
+// encrypt dosc of 'userSchema' when User.save() and decrypt when User.find()
+// process.env.SECRET_KEY -> grabs SECRET_KEY from .env file
+userSchema.plugin(encrypt, {
+  secret: process.env.SECRET_KEY,
+  encryptedFields: ["password"],
 });
 
 //creating new collection ("users") as a model
