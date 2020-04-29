@@ -4,8 +4,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
-//encryption using environment variables
-const encrypt = require("mongoose-encryption");
+// MD5 encryption authentication
+const md5 = require("md5"); // to use md5 hash-function
 
 const app = express();
 
@@ -30,14 +30,6 @@ const userSchema = new mongoose.Schema({
   googleId: String,
   facebookId: String,
   secret: String,
-});
-
-/////////////////////////////////////////////Mongoose - Encryption////////////////////////////////////////////////////////////////////
-// encrypt dosc of 'userSchema' when User.save() and decrypt when User.find()
-// process.env.SECRET_KEY -> grabs SECRET_KEY from .env file
-userSchema.plugin(encrypt, {
-  secret: process.env.SECRET_KEY,
-  encryptedFields: ["password"],
 });
 
 //creating new collection ("users") as a model
@@ -65,11 +57,11 @@ app.get("/submit", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  // MD5 HASH --> take "username" and "password". Password will be turneb into unreversable hash by md5()
   const newUser = new User({
     name: req.body.username,
-    password: req.body.password,
+    password: md5(req.body.password),
   });
-
   newUser.save((err) => {
     err ? console.log(err) : res.render("secrets");
   });
@@ -77,12 +69,13 @@ app.post("/register", (req, res) => {
 
 app.post("/login", (req, res) => {
   const username = req.body.username;
-  const requestedPassword = req.body.password;
+  // MD5 HASH
+  const requestedPassword = md5(req.body.password); // to hash requested password
   User.findOne({ name: username }, (err, foundUser) => {
     if (err) {
       console.log(err);
     } else {
-      //  compare stored at "userDB"  "password" with "requestedPassword"
+      // MD5 HASH --> compare stored at "userDB" and already hashed "password" with "requestedPassword" which was hashed via md5()
       if (foundUser) {
         foundUser.password === requestedPassword
           ? res.render("secrets")
